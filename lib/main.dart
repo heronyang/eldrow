@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dictionary.dart';
 
 void main() {
   runApp(const Eldrow());
@@ -43,12 +44,31 @@ class _MainPageState extends State<MainPage> {
   final List<TextEditingController> _greyControllers =
       List.generate(20, (i) => TextEditingController());
 
+  var dictionary = Dictionary();
+
   @override
   void dispose() {
     for (int i = 0; i < _greenControllers.length; i++) {
       _greenControllers[i].dispose();
     }
+    for (int i = 0; i < _yellowControllers.length; i++) {
+      for (int j = 0; j < _yellowControllers[i].length; j++) {
+        _yellowControllers[i][j].dispose();
+      }
+    }
+    for (int i = 0; i < _greyControllers.length; i++) {
+      _greyControllers[i].dispose();
+    }
     super.dispose();
+  }
+
+  @override
+  initState() {
+    super.initState();
+    dictionary.init().then((result) {
+      print("result: $result");
+      setState(() {});
+    });
   }
 
   void _submit() {
@@ -56,10 +76,15 @@ class _MainPageState extends State<MainPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          content: Text(_greenControllers[1].text),
+          backgroundColor: Colors.black,
+          content: Text(_solve()),
         );
       },
     );
+  }
+
+  String _solve() {
+    return "answer....";
   }
 
   @override
