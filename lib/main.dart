@@ -44,7 +44,9 @@ class _MainPageState extends State<MainPage> {
   final List<TextEditingController> _greyControllers =
       List.generate(20, (i) => TextEditingController());
 
-  var dictionary = Dictionary();
+  var _dictionary = Dictionary();
+
+  String _message = "Loading...";
 
   @override
   void dispose() {
@@ -65,9 +67,10 @@ class _MainPageState extends State<MainPage> {
   @override
   initState() {
     super.initState();
-    dictionary.init().then((result) {
-      print("result: $result");
-      setState(() {});
+    _dictionary.init().then((result) {
+      setState(() {
+        _message = result;
+      });
     });
   }
 
@@ -95,6 +98,11 @@ class _MainPageState extends State<MainPage> {
       ),
       backgroundColor: Colors.black,
       body: Column(children: [
+        SizedBox(height: 20),
+        Text(
+          '$_message',
+          style: TextStyle(fontStyle: FontStyle.italic),
+        ),
         SizedBox(height: 20),
         Text('Position Matters'),
         _buildCorrectLetterCorrectSpotInputTable(),
