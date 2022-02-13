@@ -58,24 +58,3 @@ List<String> solve(
   }
   return answers;
 }
-
-void main(List<String> arguments) async {
-  var dictionary = new Dictionary();
-  await dictionary.init();
-
-  List<PositionLetter> correctLetterCorrectSpot = [
-    PositionLetter(1, 'l'),
-    PositionLetter(3, 'e'),
-    PositionLetter(4, 'r')
-  ];
-  List<PositionLetter> correctLetterIncorrectSpot = [
-    PositionLetter(2, 'u'),
-    PositionLetter(1, 'u')
-  ];
-  List<String> incorrectLetter = ['h', 'o', 's', 't', 'i', 'g', 'b'];
-
-  List<String> answers = solve(dictionary, correctLetterCorrectSpot,
-      correctLetterIncorrectSpot, incorrectLetter);
-  print('Found ${answers.length} answer(s):');
-  print(answers);
-}

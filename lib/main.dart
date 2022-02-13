@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dictionary.dart';
+import 'wordle_solver.dart';
 
 void main() {
   runApp(const Eldrow());
@@ -47,6 +48,7 @@ class _MainPageState extends State<MainPage> {
   var _dictionary = Dictionary();
 
   String _message = "Loading...";
+  String _answer = "...";
 
   @override
   void dispose() {
@@ -75,19 +77,43 @@ class _MainPageState extends State<MainPage> {
   }
 
   void _submit() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: Colors.black,
-          content: Text(_solve()),
-        );
-      },
-    );
+    setState(() {
+      _answer = _solve();
+    });
   }
 
   String _solve() {
-    return "answer....";
+    List<PositionLetter> correctLetterCorrectPosition = [];
+    for (int i = 0; i < _greenControllers.length; i++) {
+      if (_greenControllers[i].text != "") {
+        correctLetterCorrectPosition
+            .add(PositionLetter(i, _greenControllers[i].text));
+      }
+    }
+
+    List<PositionLetter> correctLetterIncorrectPosition = [];
+    for (int i = 0; i < _yellowControllers.length; i++) {
+      for (int guess = 0; guess < _yellowControllers[i].length; guess++) {
+        String letter = _yellowControllers[i][guess].text;
+        if (letter != "") {
+          correctLetterIncorrectPosition.add(PositionLetter(i, letter));
+        }
+      }
+    }
+
+    List<String> incorrectLetter = [];
+    for (int i = 0; i < _greyControllers.length; i++) {
+      if (_greyControllers[i].text != "") {
+        incorrectLetter.add(_greyControllers[i].text);
+      }
+    }
+
+    List<String> answers = solve(_dictionary, correctLetterCorrectPosition,
+        correctLetterIncorrectPosition, incorrectLetter);
+    if (answers.length == 0) {
+      return "No Answer Found.";
+    }
+    return answers.join(" ");
   }
 
   @override
@@ -97,7 +123,8 @@ class _MainPageState extends State<MainPage> {
         title: Text(widget.title),
       ),
       backgroundColor: Colors.black,
-      body: Column(children: [
+      body: SingleChildScrollView(
+          child: Column(children: [
         SizedBox(height: 20),
         Text(
           '$_message',
@@ -105,13 +132,16 @@ class _MainPageState extends State<MainPage> {
         ),
         SizedBox(height: 20),
         Text('Position Matters'),
-        _buildCorrectLetterCorrectSpotInputTable(),
+        _buildCorrectLetterCorrectPositionInputTable(),
         SizedBox(height: 20),
-        _buildCorrectLetterIncorrectSpotInputTable(),
+        _buildCorrectLetterIncorrectPositionInputTable(),
         SizedBox(height: 20),
         Text('Position Doesn\'t Matter'),
         _buildIncorrectLetterInputTable(),
-      ]),
+        SizedBox(height: 20),
+        Text('Answer'),
+        Text('$_answer'),
+      ])),
       floatingActionButton: FloatingActionButton(
         onPressed: _submit,
         tooltip: 'Submit',
@@ -120,7 +150,7 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
-  Widget _buildCorrectLetterCorrectSpotInputTable() {
+  Widget _buildCorrectLetterCorrectPositionInputTable() {
     return Container(
         color: Color(0xff538d4e),
         child: Table(
@@ -138,7 +168,7 @@ class _MainPageState extends State<MainPage> {
         ));
   }
 
-  Widget _buildCorrectLetterIncorrectSpotInputTable() {
+  Widget _buildCorrectLetterIncorrectPositionInputTable() {
     return Container(
         color: Color(0xffb59f3b),
         child: Table(
@@ -234,14 +264,30 @@ class _MainPageState extends State<MainPage> {
 
   Widget _buildLetterInput(TextEditingController controller) {
     return TextField(
-        controller: controller,
-        decoration: const InputDecoration(
-          hintText: '_',
-        ),
-        textAlign: TextAlign.center,
-        inputFormatters: [
-          LengthLimitingTextInputFormatter(1),
-          FilteringTextInputFormatter.allow(RegExp("[A-Z]"))
-        ]);
+      autocorrect: false,
+      controller: controller,
+      decoration: const InputDecoration(
+        hintText: '_',
+      ),
+      inputFormatters: [
+        LengthLimitingTextInputFormatter(1),
+        FilteringTextInputFormatter.allow(RegExp("[a-zA-Z]")),
+        UpperCaseTextFormatter(),
+      ],
+      keyboardType: TextInputType.text,
+      textAlign: TextAlign.center,
+      textCapitalization: TextCapitalization.characters,
+    );
+  }
+}
+
+class UpperCaseTextFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    return TextEditingValue(
+      text: newValue.text.toUpperCase(),
+      selection: newValue.selection,
+    );
   }
 }
